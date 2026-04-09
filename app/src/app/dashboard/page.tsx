@@ -4,9 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { BookOpen, CheckCircle2, Clock, Library, Star } from "lucide-react";
-import { getAllSavedBooks, getRecentlyViewed, SavedBook } from "@/lib/utils/storageHelpers";
-import { Book } from "@/lib/utils/bookMapper";
 import { SHELVES } from "@/constants/shelves";
+import {
+  getAllSavedBooks,
+  getRecentlyViewed,
+  SavedBook,
+} from "@/lib/utils/storageHelpers";
+import { Book } from "@/lib/utils/bookMapper";
+import ReadingGoalCard from "@/components/ReadingGoalCard";
 
 function SmallBookCard({ book }: { book: Book }) {
   const hasCover = book.coverUrl !== "/placeholder-book.svg";
@@ -17,9 +22,17 @@ function SmallBookCard({ book }: { book: Book }) {
     >
       <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded-md bg-muted">
         {hasCover ? (
-          <Image src={book.coverMediumUrl} alt={book.title} fill className="object-cover" sizes="40px" />
+          <Image
+            src={book.coverMediumUrl}
+            alt={book.title}
+            fill
+            className="object-cover"
+            sizes="40px"
+          />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-accent text-lg">📚</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-accent text-lg">
+            📚
+          </div>
         )}
       </div>
       <div className="min-w-0">
@@ -51,9 +64,17 @@ function ReadingCard({ saved }: { saved: SavedBook }) {
     >
       <div className="relative h-20 w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
         {hasCover ? (
-          <Image src={book.coverMediumUrl} alt={book.title} fill className="object-cover" sizes="56px" />
+          <Image
+            src={book.coverMediumUrl}
+            alt={book.title}
+            fill
+            className="object-cover"
+            sizes="56px"
+          />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-accent text-2xl">📚</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-accent text-2xl">
+            📚
+          </div>
         )}
       </div>
       <div className="flex flex-1 flex-col justify-between min-w-0">
@@ -95,16 +116,13 @@ export default function DashboardPage() {
     setRecent(getRecentlyViewed().slice(0, 6));
   }, []);
 
-  const reading = allBooks.filter((b) => b.shelf === "reading");
-  const finished = allBooks.filter((b) => b.shelf === "finished");
+  const reading    = allBooks.filter((b) => b.shelf === "reading");
+  const finished   = allBooks.filter((b) => b.shelf === "finished");
   const wantToRead = allBooks.filter((b) => b.shelf === "wantToRead");
-  const favorites = allBooks.filter((b) => b.shelf === "favorites");
+  const favorites  = allBooks.filter((b) => b.shelf === "favorites");
 
-  const totalPages = reading.reduce(
-    (sum, b) => sum + (b.book.pageCount ?? 0),
-    0
-  );
-  const pagesRead = reading.reduce((sum, b) => sum + (b.progress ?? 0), 0);
+  const totalPages = reading.reduce((sum, b) => sum + (b.book.pageCount ?? 0), 0);
+  const pagesRead  = reading.reduce((sum, b) => sum + (b.progress ?? 0), 0);
 
   if (allBooks.length === 0 && recent.length === 0) {
     return (
@@ -135,13 +153,13 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Stats row */}
+      {/* ── Stats row ─────────────────────────────────────────────────── */}
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
-          { icon: BookOpen, label: "Reading", value: reading.length, color: "text-blue-500" },
-          { icon: CheckCircle2, label: "Finished", value: finished.length, color: "text-green-500" },
-          { icon: Clock, label: "Want to Read", value: wantToRead.length, color: "text-amber-500" },
-          { icon: Star, label: "Favorites", value: favorites.length, color: "text-rose-500" },
+          { icon: BookOpen,     label: "Reading",      value: reading.length,    color: "text-cyan-400" },
+          { icon: CheckCircle2, label: "Finished",     value: finished.length,   color: "text-green-500" },
+          { icon: Clock,        label: "Want to Read", value: wantToRead.length, color: "text-amber-400" },
+          { icon: Star,         label: "Favorites",    value: favorites.length,  color: "text-rose-400" },
         ].map(({ icon: Icon, label, value, color }) => (
           <div key={label} className="rounded-xl border border-border bg-card p-4">
             <Icon className={`mb-2 h-5 w-5 ${color}`} />
@@ -170,6 +188,12 @@ export default function DashboardPage() {
             </div>
           </section>
         )}
+
+        {/* Reading goal */}
+        <section>
+          <h2 className="mb-4 font-semibold text-foreground">Monthly Goal</h2>
+          <ReadingGoalCard />
+        </section>
 
         {/* Recently viewed */}
         {recent.length > 0 && (

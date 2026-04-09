@@ -1,6 +1,8 @@
 import Link from "next/link";
 import BookHero from "@/components/ui/hero";
 import BookMarquee from "@/components/BookMarquee";
+import MoodGrid from "@/components/MoodGrid";
+import RecentlyViewed from "@/components/RecentlyViewed";
 
 const FEATURED_SUBJECTS = [
   { label: "Fantasy",         emoji: "🧙",  query: "fantasy" },
@@ -23,6 +25,9 @@ export default function HomePage() {
       {/* ── Shader Hero ───────────────────────────────────────────────── */}
       <BookHero />
 
+      {/* ── Recently Viewed (client — only shows if history exists) ───── */}
+      <RecentlyViewed />
+
       {/* ── Book Marquee Showcase ─────────────────────────────────────── */}
       <section className="py-16">
         <div className="mb-10 px-6 text-center">
@@ -39,9 +44,11 @@ export default function HomePage() {
         <BookMarquee />
       </section>
 
+      {/* ── Mood-Based Discovery ─────────────────────────────────────── */}
+      <MoodGrid />
+
       {/* ── Explore by Subject ───────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-6 py-16">
-        {/* Section header */}
+      <section className="mx-auto max-w-6xl px-6 pb-16">
         <div className="mb-10">
           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
             Browse by Genre
@@ -70,10 +77,8 @@ export default function HomePage() {
       {/* ── Reading companion CTA ────────────────────────────────────── */}
       <section className="mx-auto max-w-6xl px-6 pb-24">
         <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-br from-white/4 to-white/2 px-8 py-14 text-center">
-          {/* Decorative glows */}
           <div className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full bg-cyan-500/10 blur-3xl" />
           <div className="pointer-events-none absolute -left-12 -bottom-12 h-56 w-56 rounded-full bg-orange-500/10 blur-3xl" />
-          {/* Top border line */}
           <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
 
           <div className="relative">
