@@ -56,10 +56,10 @@ export default function HomePage() {
             <Link
               key={s.label}
               href={`/search?q=${encodeURIComponent(s.query)}`}
-              className="group flex flex-col items-center gap-2 rounded-xl border border-white/8 bg-white/4 px-3 py-4 text-center transition-all duration-200 hover:border-cyan-400/30 hover:bg-white/8 hover:shadow-lg hover:shadow-cyan-400/5"
+              className="group flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/6 px-3 py-4 text-center transition-all duration-200 hover:border-cyan-400/40 hover:bg-white/10 hover:shadow-lg hover:shadow-cyan-400/10"
             >
               <span className="text-2xl">{s.emoji}</span>
-              <span className="text-xs font-medium text-white/60 group-hover:text-cyan-400 transition-colors">
+              <span className="text-xs font-semibold text-white/90 group-hover:text-cyan-400 transition-colors">
                 {s.label}
               </span>
             </Link>
