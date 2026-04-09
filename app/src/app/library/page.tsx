@@ -3,34 +3,46 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Trash2, BookOpen, Library } from "lucide-react";
+import { Trash2, BookOpen, Library, ChevronDown, FileText } from "lucide-react";
 import { SHELVES, ShelfId } from "@/constants/shelves";
-import { SavedBook, getAllSavedBooks, removeBook, getBooksByShelf } from "@/lib/utils/storageHelpers";
+import {
+  SavedBook,
+  getAllSavedBooks,
+  removeBook,
+  getBooksByShelf,
+  saveBookToShelf,
+} from "@/lib/utils/storageHelpers";
 import { cn } from "@/lib/utils";
 
 function SavedBookCard({
   saved,
-  onRemove,
+  onUpdate,
 }: {
   saved: SavedBook;
-  onRemove: () => void;
+  onUpdate: () => void;
 }) {
   const { book } = saved;
   const hasCover = book.coverUrl !== "/placeholder-book.svg";
+  const [moving, setMoving] = useState(false);
+
+  function handleMove(shelf: ShelfId) {
+    saveBookToShelf(book, shelf);
+    setMoving(false);
+    onUpdate();
+  }
+
+  function handleRemove() {
+    removeBook(book.id);
+    onUpdate();
+  }
 
   return (
     <div className="group relative flex gap-4 rounded-xl border border-border bg-card p-3 transition-all hover:border-primary/30 hover:shadow-md">
       {/* Cover */}
       <Link href={`/book/${book.id}`} className="shrink-0">
-        <div className="relative h-20 w-14 overflow-hidden rounded-lg bg-muted">
+        <div className="relative h-24 w-16 overflow-hidden rounded-lg bg-muted">
           {hasCover ? (
-            <Image
-              src={book.coverMediumUrl}
-              alt={book.title}
-              fill
-              className="object-cover"
-              sizes="56px"
-            />
+            <Image src={book.coverMediumUrl} alt={book.title} fill className="object-cover" sizes="64px" />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-accent">
               <span className="text-xl">📚</span>
@@ -40,7 +52,7 @@ function SavedBookCard({
       </Link>
 
       {/* Info */}
-      <div className="flex flex-1 flex-col justify-between min-w-0">
+      <div className="flex flex-1 flex-col justify-between min-w-0 gap-1">
         <div>
           <Link
             href={`/book/${book.id}`}
@@ -55,9 +67,17 @@ function SavedBookCard({
           )}
         </div>
 
+        {/* Notes preview */}
+        {saved.notes && (
+          <p className="flex items-start gap-1 text-[11px] text-muted-foreground italic line-clamp-1">
+            <FileText className="h-3 w-3 mt-0.5 shrink-0 text-primary/60" />
+            {saved.notes}
+          </p>
+        )}
+
         {/* Progress bar */}
         {saved.progress !== undefined && book.pageCount && (
-          <div className="mt-2">
+          <div>
             <div className="mb-1 flex justify-between text-[10px] text-muted-foreground">
               <span>{saved.progress} / {book.pageCount} pages</span>
               <span>{Math.round((saved.progress / book.pageCount) * 100)}%</span>
@@ -65,18 +85,46 @@ function SavedBookCard({
             <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
               <div
                 className="h-full rounded-full bg-primary"
-                style={{
-                  width: `${Math.min(100, (saved.progress / book.pageCount) * 100)}%`,
-                }}
+                style={{ width: `${Math.min(100, (saved.progress / book.pageCount) * 100)}%` }}
               />
             </div>
           </div>
         )}
+
+        {/* Move to shelf */}
+        <div className="relative mt-1">
+          <button
+            onClick={() => setMoving((m) => !m)}
+            className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors"
+          >
+            Move shelf
+            <ChevronDown className={cn("h-3 w-3 transition-transform", moving && "rotate-180")} />
+          </button>
+
+          {moving && (
+            <div className="absolute bottom-full left-0 z-20 mb-1 min-w-40 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+              {SHELVES.map((shelf) => (
+                <button
+                  key={shelf.id}
+                  disabled={shelf.id === saved.shelf}
+                  onClick={() => handleMove(shelf.id)}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-accent disabled:opacity-40 disabled:cursor-default"
+                >
+                  <span>{shelf.emoji}</span>
+                  <span className="font-medium text-foreground">{shelf.label}</span>
+                  {shelf.id === saved.shelf && (
+                    <span className="ml-auto text-[10px] text-primary">current</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Remove */}
       <button
-        onClick={onRemove}
+        onClick={handleRemove}
         className="absolute right-3 top-3 rounded-md p-1 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive/10 hover:text-destructive"
         title="Remove from library"
       >
@@ -88,31 +136,21 @@ function SavedBookCard({
 
 export default function LibraryPage() {
   const [activeShelf, setActiveShelf] = useState<ShelfId>("reading");
-  const [books, setBooks] = useState<SavedBook[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
+  const [books, setBooks]             = useState<SavedBook[]>([]);
+  const [totalCount, setTotalCount]   = useState(0);
 
   function reload() {
     setBooks(getBooksByShelf(activeShelf));
     setTotalCount(getAllSavedBooks().length);
   }
 
-  useEffect(() => {
-    reload();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeShelf]);
-
-  function handleRemove(bookId: string) {
-    removeBook(bookId);
-    reload();
-  }
+  useEffect(() => { reload(); }, [activeShelf]); // eslint-disable-line
 
   if (totalCount === 0) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-20 text-center">
         <Library className="mx-auto mb-4 h-14 w-14 text-muted-foreground/30" />
-        <h1 className="mb-2 text-xl font-semibold text-foreground">
-          Your library is empty
-        </h1>
+        <h1 className="mb-2 text-xl font-semibold text-foreground">Your library is empty</h1>
         <p className="mb-6 text-sm text-muted-foreground">
           Search for books and add them to your shelves to get started.
         </p>
@@ -174,21 +212,14 @@ export default function LibraryPage() {
         <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
           <BookOpen className="h-10 w-10 opacity-30" />
           <p className="text-sm">No books on this shelf yet.</p>
-          <Link
-            href="/"
-            className="text-xs text-primary hover:underline"
-          >
+          <Link href="/" className="text-xs text-primary hover:underline">
             Browse books to add
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {books.map((saved) => (
-            <SavedBookCard
-              key={saved.book.id}
-              saved={saved}
-              onRemove={() => handleRemove(saved.book.id)}
-            />
+            <SavedBookCard key={saved.book.id} saved={saved} onUpdate={reload} />
           ))}
         </div>
       )}

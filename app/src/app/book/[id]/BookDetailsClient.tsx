@@ -11,6 +11,7 @@ import ShelfSelector from "@/components/ShelfSelector";
 import ProgressCard from "@/components/ProgressCard";
 import NotesCard from "@/components/NotesCard";
 import HighlightsCard from "@/components/HighlightsCard";
+import SimilarBooks from "@/components/SimilarBooks";
 
 interface AuthorInfo {
   name: string;
@@ -22,10 +23,10 @@ interface AuthorInfo {
 interface Props { id: string; }
 
 export default function BookDetailsClient({ id }: Props) {
-  const [book, setBook]       = useState<BookDetails | null>(null);
-  const [author, setAuthor]   = useState<AuthorInfo | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState<string | null>(null);
+  const [book, setBook]         = useState<BookDetails | null>(null);
+  const [author, setAuthor]     = useState<AuthorInfo | null>(null);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState<string | null>(null);
   const [descExpanded, setDescExpanded] = useState(false);
 
   useEffect(() => {
@@ -37,15 +38,12 @@ export default function BookDetailsClient({ id }: Props) {
         setBook(details);
         addRecentlyViewed(details);
 
-        // Fetch first author in background
         const authorKey = work.authors?.[0]?.author?.key;
         if (authorKey) {
           try {
             const raw = await getAuthor(authorKey);
             setAuthor(mapAuthor(raw));
-          } catch {
-            // author fetch failing is non-critical
-          }
+          } catch { /* non-critical */ }
         }
       } catch {
         setError("Could not load book details. Please try again.");
@@ -83,13 +81,12 @@ export default function BookDetailsClient({ id }: Props) {
     );
   }
 
-  const hasCover   = book.coverUrl !== "/placeholder-book.svg";
-  const descWords  = book.description?.split(" ") ?? [];
-  const isLongDesc = descWords.length > 80;
-  const displayDesc =
-    isLongDesc && !descExpanded
-      ? descWords.slice(0, 80).join(" ") + "…"
-      : book.description;
+  const hasCover    = book.coverUrl !== "/placeholder-book.svg";
+  const descWords   = book.description?.split(" ") ?? [];
+  const isLongDesc  = descWords.length > 80;
+  const displayDesc = isLongDesc && !descExpanded
+    ? descWords.slice(0, 80).join(" ") + "…"
+    : book.description;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -123,7 +120,6 @@ export default function BookDetailsClient({ id }: Props) {
             )}
           </div>
 
-          {/* Rating */}
           {book.rating && book.rating > 0 && (
             <div className="mt-3 flex items-center justify-center gap-1.5 text-sm text-amber-400">
               <Star className="h-4 w-4 fill-current" />
@@ -139,8 +135,6 @@ export default function BookDetailsClient({ id }: Props) {
 
         {/* ── Info column ────────────────────────────────────────────── */}
         <div className="flex flex-1 flex-col gap-6 min-w-0">
-
-          {/* Title & author */}
           <div>
             <h1 className="text-2xl font-bold leading-tight text-foreground sm:text-3xl">
               {book.title}
@@ -221,46 +215,36 @@ export default function BookDetailsClient({ id }: Props) {
             </div>
           )}
 
-          {/* ── Author bio card ──────────────────────────────────────── */}
+          {/* Author bio */}
           {author && (
             <div className="rounded-xl border border-border bg-card p-4">
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 About the Author
               </h2>
               <div className="flex gap-4">
-                {/* Photo */}
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border border-border bg-muted">
                   {author.photoUrl ? (
-                    <Image
-                      src={author.photoUrl}
-                      alt={author.name}
-                      fill
-                      className="object-cover"
-                      sizes="64px"
-                    />
+                    <Image src={author.photoUrl} alt={author.name} fill className="object-cover" sizes="64px" />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <User className="h-6 w-6 text-muted-foreground" />
                     </div>
                   )}
                 </div>
-                {/* Text */}
                 <div className="min-w-0">
                   <p className="font-semibold text-foreground text-sm">{author.name}</p>
                   {author.birthDate && (
                     <p className="text-xs text-muted-foreground mb-1">b. {author.birthDate}</p>
                   )}
                   {author.bio && (
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-4">
-                      {author.bio}
-                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-4">{author.bio}</p>
                   )}
                 </div>
               </div>
             </div>
           )}
 
-          {/* ── Personal library tools ───────────────────────────────── */}
+          {/* Personal tools */}
           <div className="flex flex-col gap-3">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               My Library
@@ -272,6 +256,13 @@ export default function BookDetailsClient({ id }: Props) {
           </div>
         </div>
       </div>
+
+      {/* ── Similar books ────────────────────────────────────────────── */}
+      <SimilarBooks
+        subjects={book.subjects.slice(0, 2)}
+        authors={book.authors.slice(0, 1)}
+        currentTitle={book.title}
+      />
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { BookOpen, CheckCircle2, Clock, Library, Star } from "lucide-react";
+import { BookOpen, CheckCircle2, Clock, Library, Star, TrendingUp, FileText, Quote } from "lucide-react";
 import { SHELVES } from "@/constants/shelves";
 import {
   getAllSavedBooks,
@@ -22,17 +22,9 @@ function SmallBookCard({ book }: { book: Book }) {
     >
       <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded-md bg-muted">
         {hasCover ? (
-          <Image
-            src={book.coverMediumUrl}
-            alt={book.title}
-            fill
-            className="object-cover"
-            sizes="40px"
-          />
+          <Image src={book.coverMediumUrl} alt={book.title} fill className="object-cover" sizes="40px" />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-accent text-lg">
-            📚
-          </div>
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-accent text-lg">📚</div>
         )}
       </div>
       <div className="min-w-0">
@@ -40,9 +32,7 @@ function SmallBookCard({ book }: { book: Book }) {
           {book.title}
         </p>
         {book.authors[0] && (
-          <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">
-            {book.authors[0]}
-          </p>
+          <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">{book.authors[0]}</p>
         )}
       </div>
     </Link>
@@ -64,24 +54,14 @@ function ReadingCard({ saved }: { saved: SavedBook }) {
     >
       <div className="relative h-20 w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
         {hasCover ? (
-          <Image
-            src={book.coverMediumUrl}
-            alt={book.title}
-            fill
-            className="object-cover"
-            sizes="56px"
-          />
+          <Image src={book.coverMediumUrl} alt={book.title} fill className="object-cover" sizes="56px" />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-accent text-2xl">
-            📚
-          </div>
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-accent text-2xl">📚</div>
         )}
       </div>
       <div className="flex flex-1 flex-col justify-between min-w-0">
         <div>
-          <p className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-            {book.title}
-          </p>
+          <p className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">{book.title}</p>
           {book.authors[0] && (
             <p className="mt-0.5 text-xs text-muted-foreground">{book.authors[0]}</p>
           )}
@@ -93,10 +73,7 @@ function ReadingCard({ saved }: { saved: SavedBook }) {
               <span>{percent}%</span>
             </div>
             <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${percent}%` }}
-              />
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${percent}%` }} />
             </div>
           </div>
         ) : (
@@ -109,7 +86,7 @@ function ReadingCard({ saved }: { saved: SavedBook }) {
 
 export default function DashboardPage() {
   const [allBooks, setAllBooks] = useState<SavedBook[]>([]);
-  const [recent, setRecent] = useState<Book[]>([]);
+  const [recent, setRecent]     = useState<Book[]>([]);
 
   useEffect(() => {
     setAllBooks(getAllSavedBooks());
@@ -121,23 +98,23 @@ export default function DashboardPage() {
   const wantToRead = allBooks.filter((b) => b.shelf === "wantToRead");
   const favorites  = allBooks.filter((b) => b.shelf === "favorites");
 
-  const totalPages = reading.reduce((sum, b) => sum + (b.book.pageCount ?? 0), 0);
-  const pagesRead  = reading.reduce((sum, b) => sum + (b.progress ?? 0), 0);
+  // Stats
+  const totalPagesRead    = allBooks.reduce((s, b) => s + (b.progress ?? 0), 0);
+  const totalHighlights   = allBooks.reduce((s, b) => s + (b.highlights?.length ?? 0), 0);
+  const booksWithNotes    = allBooks.filter((b) => b.notes && b.notes.trim().length > 0).length;
+  const avgRating         = (() => {
+    const rated = allBooks.filter((b) => b.book.rating && b.book.rating > 0);
+    if (!rated.length) return null;
+    return (rated.reduce((s, b) => s + (b.book.rating ?? 0), 0) / rated.length).toFixed(1);
+  })();
 
   if (allBooks.length === 0 && recent.length === 0) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-20 text-center">
         <Library className="mx-auto mb-4 h-14 w-14 text-muted-foreground/30" />
-        <h1 className="mb-2 text-xl font-semibold text-foreground">
-          Your dashboard is empty
-        </h1>
-        <p className="mb-6 text-sm text-muted-foreground">
-          Start searching for books and add them to your library.
-        </p>
-        <Link
-          href="/"
-          className="rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-        >
+        <h1 className="mb-2 text-xl font-semibold text-foreground">Your dashboard is empty</h1>
+        <p className="mb-6 text-sm text-muted-foreground">Start searching for books and add them to your library.</p>
+        <Link href="/" className="rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
           Discover Books
         </Link>
       </div>
@@ -148,13 +125,11 @@ export default function DashboardPage() {
     <div className="mx-auto max-w-5xl px-4 py-10">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-foreground">My Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Your reading overview at a glance
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Your reading overview at a glance</p>
       </div>
 
-      {/* ── Stats row ─────────────────────────────────────────────────── */}
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      {/* ── Primary stats ─────────────────────────────────────────────── */}
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
           { icon: BookOpen,     label: "Reading",      value: reading.length,    color: "text-cyan-400" },
           { icon: CheckCircle2, label: "Finished",     value: finished.length,   color: "text-green-500" },
@@ -169,27 +144,44 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      {/* ── Reading stats ─────────────────────────────────────────────── */}
+      {allBooks.length > 0 && (
+        <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="rounded-xl border border-border bg-card p-4">
+            <TrendingUp className="mb-2 h-5 w-5 text-cyan-400" />
+            <p className="text-2xl font-bold text-foreground">{totalPagesRead.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground">Pages read</p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4">
+            <Quote className="mb-2 h-5 w-5 text-violet-400" />
+            <p className="text-2xl font-bold text-foreground">{totalHighlights}</p>
+            <p className="text-xs text-muted-foreground">Highlights saved</p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4">
+            <FileText className="mb-2 h-5 w-5 text-orange-400" />
+            <p className="text-2xl font-bold text-foreground">{booksWithNotes}</p>
+            <p className="text-xs text-muted-foreground">Books with notes</p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4">
+            <Star className="mb-2 h-5 w-5 text-amber-400" />
+            <p className="text-2xl font-bold text-foreground">{avgRating ?? "—"}</p>
+            <p className="text-xs text-muted-foreground">Avg book rating</p>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Currently reading */}
         {reading.length > 0 && (
           <section>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-semibold text-foreground">Currently Reading</h2>
-              {totalPages > 0 && (
-                <span className="text-xs text-muted-foreground">
-                  {pagesRead} / {totalPages} pages total
-                </span>
-              )}
-            </div>
+            <h2 className="mb-4 font-semibold text-foreground">Currently Reading</h2>
             <div className="flex flex-col gap-3">
-              {reading.map((s) => (
-                <ReadingCard key={s.book.id} saved={s} />
-              ))}
+              {reading.map((s) => <ReadingCard key={s.book.id} saved={s} />)}
             </div>
           </section>
         )}
 
-        {/* Reading goal */}
+        {/* Monthly goal */}
         <section>
           <h2 className="mb-4 font-semibold text-foreground">Monthly Goal</h2>
           <ReadingGoalCard />
@@ -200,14 +192,12 @@ export default function DashboardPage() {
           <section>
             <h2 className="mb-4 font-semibold text-foreground">Recently Viewed</h2>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {recent.map((book) => (
-                <SmallBookCard key={book.id} book={book} />
-              ))}
+              {recent.map((book) => <SmallBookCard key={book.id} book={book} />)}
             </div>
           </section>
         )}
 
-        {/* Shelf summary */}
+        {/* Shelf overview */}
         <section className="lg:col-span-2">
           <h2 className="mb-4 font-semibold text-foreground">Shelf Overview</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">

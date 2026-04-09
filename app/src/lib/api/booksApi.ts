@@ -1,4 +1,4 @@
-const BASE_URL = "https://openlibrary.org";
+const BASE_URL  = "https://openlibrary.org";
 const COVERS_URL = "https://covers.openlibrary.org";
 
 export interface OLSearchDoc {
@@ -44,6 +44,8 @@ export interface OLAuthor {
   death_date?: string;
 }
 
+export type SortField = "relevance" | "new" | "old" | "rating" | "title";
+
 export function getCoverUrl(
   coverId: number | undefined,
   size: "S" | "M" | "L" = "M"
@@ -52,20 +54,58 @@ export function getCoverUrl(
   return `${COVERS_URL}/b/id/${coverId}-${size}.jpg`;
 }
 
+function sortParam(sort: SortField): string {
+  switch (sort) {
+    case "new":    return "&sort=new";
+    case "old":    return "&sort=old";
+    case "rating": return "&sort=rating+desc";
+    case "title":  return "&sort=title";
+    default:       return "";
+  }
+}
+
 export async function searchBooks(
   query: string,
   page = 1,
-  limit = 20
+  limit = 20,
+  sort: SortField = "relevance",
+  onlyCover = false
 ): Promise<OLSearchResult> {
   const offset = (page - 1) * limit;
-  const url = `${BASE_URL}/search.json?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`;
+  const coverFilter = onlyCover ? "&has_fulltext=false&cover_i=*" : "";
+  const url = `${BASE_URL}/search.json?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}${sortParam(sort)}${coverFilter}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Search failed");
   return res.json();
 }
 
+export async function searchBySubject(
+  subject: string,
+  limit = 8
+): Promise<OLSearchResult> {
+  const url = `${BASE_URL}/search.json?subject=${encodeURIComponent(subject)}&limit=${limit}&has_fulltext=false`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Subject search failed");
+  return res.json();
+}
+
+export async function searchByAuthor(
+  authorName: string,
+  excludeTitle: string,
+  limit = 8
+): Promise<OLSearchResult> {
+  const url = `${BASE_URL}/search.json?author=${encodeURIComponent(authorName)}&limit=${limit + 1}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Author search failed");
+  const data: OLSearchResult = await res.json();
+  // Remove the current book from results
+  data.docs = data.docs
+    .filter((d) => d.title.toLowerCase() !== excludeTitle.toLowerCase())
+    .slice(0, limit);
+  return data;
+}
+
 export async function getWorkDetails(workId: string): Promise<OLWork> {
-  // workId may come as "/works/OL123W" or just "OL123W"
   const id = workId.startsWith("/works/") ? workId : `/works/${workId}`;
   const res = await fetch(`${BASE_URL}${id}.json`);
   if (!res.ok) throw new Error("Failed to fetch work details");
@@ -73,9 +113,7 @@ export async function getWorkDetails(workId: string): Promise<OLWork> {
 }
 
 export async function getAuthor(authorKey: string): Promise<OLAuthor> {
-  const key = authorKey.startsWith("/authors/")
-    ? authorKey
-    : `/authors/${authorKey}`;
+  const key = authorKey.startsWith("/authors/") ? authorKey : `/authors/${authorKey}`;
   const res = await fetch(`${BASE_URL}${key}.json`);
   if (!res.ok) throw new Error("Failed to fetch author");
   return res.json();
