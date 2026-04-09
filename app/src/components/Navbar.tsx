@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Library, LayoutDashboard, Search } from "lucide-react";
+import { BookOpen, Library, LayoutDashboard, Search, Command } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -14,6 +15,11 @@ const NAV_LINKS = [
 export default function Navbar() {
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const [isMac, setIsMac] = useState(false);
+
+  useEffect(() => {
+    setIsMac(navigator.platform.toUpperCase().includes("MAC"));
+  }, []);
 
   return (
     <header
@@ -38,8 +44,18 @@ export default function Navbar() {
           <span className="text-sm sm:text-base tracking-wide">BookCompanion</span>
         </Link>
 
-        {/* Nav links */}
+        {/* Nav links + Cmd+K */}
         <nav className="flex items-center gap-1">
+          {/* Command palette trigger */}
+          <button
+            onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }))}
+            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] text-white/40 hover:bg-white/8 hover:text-white/60 transition-all mr-1"
+            title="Open command palette"
+          >
+            {isMac ? <Command className="h-3 w-3" /> : <span className="font-mono text-[10px]">Ctrl</span>}
+            <span>K</span>
+          </button>
+
           {NAV_LINKS.map(({ href, label, icon: Icon }) => {
             const active =
               href === "/" ? pathname === "/" : pathname.startsWith(href);

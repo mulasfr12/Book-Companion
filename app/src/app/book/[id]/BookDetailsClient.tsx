@@ -142,9 +142,21 @@ export default function BookDetailsClient({ id }: Props) {
             {book.authors.length > 0 && (
               <p className="mt-1.5 text-base text-muted-foreground">
                 by{" "}
-                <span className="font-medium text-foreground">
-                  {book.authors.join(", ")}
-                </span>
+                {book.authors.map((name, i) => {
+                  const key = book.authorKeys?.[i];
+                  return (
+                    <span key={name}>
+                      {key ? (
+                        <Link href={`/author/${key}`} className="font-medium text-foreground hover:text-primary transition-colors">
+                          {name}
+                        </Link>
+                      ) : (
+                        <span className="font-medium text-foreground">{name}</span>
+                      )}
+                      {i < book.authors.length - 1 && ", "}
+                    </span>
+                  );
+                })}
               </p>
             )}
           </div>
@@ -205,7 +217,7 @@ export default function BookDetailsClient({ id }: Props) {
                 {book.subjects.map((s) => (
                   <Link
                     key={s}
-                    href={`/search?q=${encodeURIComponent(s)}`}
+                    href={`/subject/${encodeURIComponent(s.toLowerCase().replace(/\s+/g, "-"))}`}
                     className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground hover:border-primary/40 hover:bg-accent transition-colors"
                   >
                     {s}

@@ -1,10 +1,11 @@
 import { OLSearchDoc, OLWork, OLAuthor, getCoverUrl } from "@/lib/api/booksApi";
 
 export interface Book {
-  id: string;         // e.g. "OL45804W"
-  workKey: string;    // e.g. "/works/OL45804W"
+  id: string;
+  workKey: string;
   title: string;
   authors: string[];
+  authorKeys: string[];   // e.g. ["OL9388A"]
   coverUrl: string;
   coverMediumUrl: string;
   publishYear?: number;
@@ -22,7 +23,7 @@ export interface BookDetails extends Book {
 }
 
 export function mapSearchDoc(doc: OLSearchDoc): Book {
-  const workKey = doc.key; // "/works/OL123W"
+  const workKey = doc.key;
   const id = workKey.replace("/works/", "");
 
   return {
@@ -30,6 +31,7 @@ export function mapSearchDoc(doc: OLSearchDoc): Book {
     workKey,
     title: doc.title,
     authors: doc.author_name ?? [],
+    authorKeys: (doc.author_key ?? []).map((k) => k.replace("/authors/", "")),
     coverUrl: getCoverUrl(doc.cover_i, "L"),
     coverMediumUrl: getCoverUrl(doc.cover_i, "M"),
     publishYear: doc.first_publish_year,
@@ -57,6 +59,7 @@ export function mapWorkDetails(
     workKey: work.key,
     title: work.title,
     authors: searchDoc?.author_name ?? [],
+    authorKeys: (searchDoc?.author_key ?? []).map((k) => k.replace("/authors/", "")),
     coverUrl: getCoverUrl(work.covers?.[0] ?? searchDoc?.cover_i, "L"),
     coverMediumUrl: getCoverUrl(work.covers?.[0] ?? searchDoc?.cover_i, "M"),
     publishYear: searchDoc?.first_publish_year,
