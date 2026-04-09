@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git)",
+      "Bash(npx create-next-app@latest app --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git)",
+      "Bash(npx shadcn@latest init --yes --defaults)",
+      "Bash(npm install:*)",
+      "Bash(npm list:*)",
+      "Bash(npm run:*)",
+      "Read(//c/Users/salum/.claude/projects/c--Users-salum-source-repos-BookCompanion/memory/**)",
+      "Bash(node -e \"const t = require\\('@paper-design/shaders-react'\\); console.log\\(Object.keys\\(t\\)\\)\")",
+      "Bash(node -e \" const t = require\\('@paper-design/shaders-react'\\); const mg = t.MeshGradient; // Get prop types from TypeScript definitions \")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\salum\\source\\repos\\BookCompanion\\app\\src\\app\\book"
+    ]
+  }
+}
